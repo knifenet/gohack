@@ -2,6 +2,7 @@ import urllib2
 import requests
 import os
 import sys
+import time
 
 GIALLO = "\033[1;33;1m"
 GNORM = "\033[0;33;1m"
@@ -11,8 +12,9 @@ BIANCO = "\033[1;37;1m"
 DOM = "\033[0;37;1m"
 ROSSO = "\033[1;31;1m"
 DEF = "\033[0m"
+searchfd = 0
 
-def crawricerca():
+def banner():
 	print """
 %s                                        
  ,---.   |              |    o          
@@ -23,6 +25,53 @@ def crawricerca():
                %sby Zanker
 %s 
 """ % (GNORM, VERDE, GNORM, VERDE, DEF)
+def searchdork():
+	downlink = 	"https://pastebin.com/raw/QWCmACjk"
+	pag = requests.get(downlink)
+	pagread = pag.text
+	paglines = pagread.split("\n")
+	urld = []
+	nomelista = []
+	print " "
+	print "%s[*] %s google dorks lists were found:%s" % (BIANCO, len(paglines), DEF)
+	cldorks = 1
+	for i in paglines:
+		line = i.split("-")
+		urld.append(line[1])
+		nomelista.append(line[0])
+		print "(%s%s%s) %s%s%s" % (GIALLO, str(cldorks), DEF, BIANCO, line[0], DEF)
+		cldorks = cldorks + 1
+	print " "
+	print "%s[?] Which list do you want to download? [Leave blank if you want to download them all]%s" % (DOM, DEF)
+	sclistas = raw_input("> ")
+	if sclistas == "":
+		lak = 0
+		while lak < len(urld):
+			try:
+				dfiledown = urllib2.urlopen(urld[lak])
+				filedorks = open("gdorks/"+nomelista[lak], "w")
+				filedorks.write(dfiledown.read())
+				filedorks.close()
+			except:
+				print "%s[!] Error downloading %s%s" % (ROSSO, nomelista[lak], DEF)
+			else:
+				print "%s[+] File '%s' successfully downloaded to 'gdorks/%s'%s" % (VERDE, nomelista[lak], nomelista[lak], DEF)
+			lak = lak + 1
+	elif not int(sclistas) in range(1, len(paglines)+1):
+		print "%s[!] Enter a valid answer%s" % (ROSSO, DEF)
+		sys.exit()
+	else:
+		try:
+			dfiledown = urllib2.urlopen(urld[int(sclistas)-1])
+			filedorks = open("gdorks/"+nomelista[int(sclistas)-1], "w")
+			filedorks.write(dfiledown.read())
+			filedorks.close()
+		except:
+			print "%s[!] Error downloading %s%s" % (ROSSO, nomelista[int(sclistas)-1], DEF)
+		else:
+			print "%s[+] File '%s' successfully downloaded to 'gdorks/%s'%s" % (VERDE, nomelista[int(sclistas)-1], nomelista[int(sclistas)-1], DEF)
+def crawricerca():
+	banner()
 	def output():
 		if len(urls) > 0:
 			urldef = []
@@ -233,16 +282,7 @@ def crawricerca():
 	output()
 
 def listdorks():
-	print """
-%s                                        
- ,---.   |              |    o          
- |  _.   |---.,---.,---.|__/ .,---.,---.
- |   |---|   |,---||    |  \ ||   ||   |
- `---'   `   '`---^`---'`   ```   '`---|
-                %sv. 1.0%s             `---'
-               %sby Zanker
-%s 
-""" % (GNORM, VERDE, GNORM, VERDE, DEF)
+	banner()
 	def output():
 		if len(urls) > 0:
 			urldef = []
@@ -295,65 +335,24 @@ def listdorks():
 	else:
 		print "%s[!] Enter a valid answer%s" % (ROSSO, DEF)
 		sys.exit()
-	print " "
-	print "%s[?] Do you want to search for G-Dorks from internet? [y/N]%s" % (DOM, DEF)
-	sdorks = raw_input("> ")
-	if sdorks == "y" or sdorks == "yes":
-		if (os.path.exists("gdorks")==False):
-			try:
-				os.system("mkdir gdorks")
-			except:
-				print "%s[!] Error creating directory 'gdorks'%s" % (ROSSO, DEF)
-				sys.exit()
-		downlink = 	"https://pastebin.com/raw/QWCmACjk"
-		pag = requests.get(downlink)
-		pagread = pag.text
-		paglines = pagread.split("\n")
-		urld = []
-		nomelista = []
+	global searchfd
+	if searchfd == 0:
 		print " "
-		print "%s[*] %s google dorks lists were found:%s" % (BIANCO, len(paglines), DEF)
-		cldorks = 1
-		for i in paglines:
-			line = i.split("-")
-			urld.append(line[1])
-			nomelista.append(line[0])
-			print "(%s%s%s) %s%s%s" % (GIALLO, str(cldorks), DEF, BIANCO, line[0], DEF)
-			cldorks = cldorks + 1
-		print " "
-		print "%s[?] Which list do you want to download? [Leave blank if you want to download them all]%s" % (DOM, DEF)
-		sclistas = raw_input("> ")
-		if sclistas == "":
-			lak = 0
-			while lak < len(urld):
+		print "%s[?] Do you want to search for G-Dorks from internet? [y/N]%s" % (DOM, DEF)
+		sdorks = raw_input("> ")
+		if sdorks == "y" or sdorks == "yes":
+			if (os.path.exists("gdorks")==False):
 				try:
-					dfiledown = urllib2.urlopen(urld[lak])
-					filedorks = open("gdorks/"+nomelista[lak], "w")
-					filedorks.write(dfiledown.read())
-					filedorks.close()
+					os.system("mkdir gdorks")
 				except:
-					print "%s[!] Error downloading %s%s" % (ROSSO, nomelista[lak], DEF)
-				else:
-					print "%s[+] File '%s' successfully downloaded to 'gdorks/%s'%s" % (VERDE, nomelista[lak], nomelista[lak], DEF)
-				lak = lak + 1
-		elif not int(sclistas) in range(1, len(paglines)+1):
+					print "%s[!] Error creating directory 'gdorks'%s" % (ROSSO, DEF)
+					sys.exit()
+			searchdork()
+		elif sdorks == "n" or sdorks == "N" or sdorks == "no" or sdorks == "":
+			pass
+		else:
 			print "%s[!] Enter a valid answer%s" % (ROSSO, DEF)
 			sys.exit()
-		else:
-			try:
-				dfiledown = urllib2.urlopen(urld[int(sclistas)-1])
-				filedorks = open("gdorks/"+nomelista[int(sclistas)-1], "w")
-				filedorks.write(dfiledown.read())
-				filedorks.close()
-			except:
-				print "%s[!] Error downloading %s%s" % (ROSSO, nomelista[int(sclistas)-1], DEF)
-			else:
-				print "%s[+] File '%s' successfully downloaded to 'gdorks/%s'%s" % (VERDE, nomelista[int(sclistas)-1], nomelista[int(sclistas)-1], DEF)
-	elif sdorks == "n" or sdorks == "N" or sdorks == "no" or sdorks == "":
-		pass
-	else:
-		print "%s[!] Enter a valid answer%s" % (ROSSO, DEF)
-		sys.exit()
 		
 	urls = []
 	print " "
@@ -362,7 +361,7 @@ def listdorks():
 	try:
 		f = open(fidorks, "r")
 	except:
-		print "%s[!] Error opening file %s%s" % (ROSSO, filedorks, DEF)
+		print "%s[!] Error opening file %s%s" % (ROSSO, fidorks, DEF)
 		sys.exit()
 	print "%s[+] Dorks ==> %s%s" % (VERDE, fidorks, DEF)
 	print " "
@@ -521,31 +520,43 @@ def listdorks():
 
 	output()
 
-os.system("clear")
-print """
-%s                                        
- ,---.   |              |    o          
- |  _.   |---.,---.,---.|__/ .,---.,---.
- |   |---|   |,---||    |  \ ||   ||   |
- `---'   `   '`---^`---'`   ```   '`---|
-                %sv. 1.0%s             `---'
-               %sby Zanker
-%s 
-
+def mainmenu():
+	os.system("clear")
+	banner()
+	print """
 [%s1%s] %sDorks link crawler%s
 [%s2%s] %sLink crawler of a search%s
+[%s3%s] %sSearch for dorks on internet%s
 
 [%s99%s] %sExit%s
-""" % (GNORM, VERDE, GNORM, VERDE, DEF, GIALLO, DEF, BIANCO, DEF, GIALLO, DEF, BIANCO, DEF, GIALLO, DEF, BIANCO, DEF)
-deci = raw_input("> ")
+	""" % (GIALLO, DEF, BIANCO, DEF, GIALLO, DEF, BIANCO, DEF, GIALLO, DEF, BIANCO, DEF, GIALLO, DEF, BIANCO, DEF)
+	deci = raw_input("> ")
 
-if deci == str(1):
-	os.system("clear")
-	listdorks()
-elif deci == str(2):
-	os.system("clear")
-	crawricerca()
-elif deci == str(99):
-	sys.exit()
-else:
-	print "%s[!] Enter a valid option%s" % (ROSSO, DEF)
+	if deci == str(1):
+		os.system("clear")
+		listdorks()
+	elif deci == str(2):
+		os.system("clear")
+		crawricerca()
+	elif deci == str(3):
+		os.system("clear")
+		if (os.path.exists("gdorks")==False):
+			try:
+				os.system("mkdir gdorks")
+			except:
+				print "%s[!] Error creating directory 'gdorks'%s" % (ROSSO, DEF)
+				sys.exit()
+		global searchfd
+		searchfd = 1
+		searchdork()
+		print " "
+		print "%s[*] Return to the main menu....%s" % (BIANCO, DEF)
+		time.sleep(1.5)
+		mainmenu()
+	elif deci == str(99):
+		sys.exit()
+	else:
+		print "%s[!] Enter a valid option%s" % (ROSSO, DEF)
+		sys.exit()
+
+mainmenu()
